@@ -42,7 +42,7 @@ public class OpeningTriggerHandler {
             }
             else
             {
-            	opeQtyPercentage = (ope.Quantity__c / totalOpenings);    
+                opeQtyPercentage = (ope.Quantity__c / totalOpenings);    
             }
             
             // Get Trigger Opening's Partial BMM 
@@ -92,7 +92,7 @@ public class OpeningTriggerHandler {
         // Add Opening's BMM Weighted Average from Trigger to Opportunity BMM Weighted Average 
         if (totalOpenings > 0)
         {
-        	acumBMM = (opeTriggerQty / totalOpenings) * opeBMM;
+            acumBMM = (opeTriggerQty / totalOpenings) * opeBMM;
         }
         
         // Loop Openings except the one in triggers loop 
@@ -143,7 +143,6 @@ public class OpeningTriggerHandler {
             
             // Update Opportunities list 
             update(opportunitiesToUpdate);
-            
             
             // Update Openings list 
             update(opesToUpdateBMM);

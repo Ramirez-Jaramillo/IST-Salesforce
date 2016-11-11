@@ -17,7 +17,7 @@ public class OpeningExtension_Test {
         System.assert(op.Opening.Position__c != null, 'Opening do not have a initial position');
     }
     
-    /*@isTest
+    @isTest
     public static Void constructNewWithOpportunityParam()
     {
         TestData TD = new TestData();
@@ -71,7 +71,7 @@ public class OpeningExtension_Test {
         System.assert(op.Opening.Position__c != null, 'Opening do not have a initial position');
         System.assert(op.Opening.Opportunity__c == TD.Opp1.Id, 'Opennig have a different Opportunity');
         System.assert(op.isNotFPContractType==true,'It is type contract FP');
-    }*/
+    }
     
     @isTest
     public static Void getListSeniorities()
@@ -274,6 +274,7 @@ public class OpeningExtension_Test {
         
         public Void loadFullOpening()
         {
+            this.loadBMMTables();
             Opening = new Opening__c();
             Opening.Duration__c = 2;        
             Opening.Location__c = ListLocations.get(0).Id;
