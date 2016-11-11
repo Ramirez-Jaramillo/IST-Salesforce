@@ -1,0 +1,271 @@
+<apex:page standardController="Opening__c" extensions="OpeningExtension" title="Opening title">
+    <style>
+	/* 
+	Max width before this PARTICULAR table gets nasty
+	This query will take effect for any screen smaller than 760px
+	and also iPads specifically.
+	*/
+	@media 
+	only screen and (max-width: 760px),
+	(min-device-width: 768px) and (max-device-width: 1024px)  {
+	
+		/* Force table to not be like tables anymore */
+		table, thead, tbody, th, td, tr { 
+			display: block; 
+		}
+		
+		/* Hide table headers (but not display: none;, for accessibility) */
+		thead tr { 
+			position: absolute;
+			top: -9999px;
+			left: -9999px;
+		}
+		
+		tr { border: 1px solid #ccc; }
+		
+		td, th { 
+			/* Behave  like a "row" */
+			border: none;
+			border-bottom: 1px solid #eee; 
+			position: relative;
+			text-align: left;
+		}
+        
+        .btnSaveNew
+        {
+        	display: none;
+        }
+        
+        .bPageTitle {
+        	font-family: "Arial";
+        }
+        
+        .bPageTitle h1 {
+        	display: none;
+        }
+        .titleSeparatingColon {
+        	display: none;
+        }
+        .pbTitle {
+        	display: none;
+        }
+        
+        .pageDescription {
+        	font-size: 1.4em;
+        	font-weight: bold;
+        	color: #000000;
+        	background-color: #ececec;
+        	padding: 5px 5px;
+        }
+        
+        .pbHeader tr  {
+        	border: none;
+        }
+        .pbHeader {
+        	display: none;
+        }
+        
+        .pbBody h3 {
+        	font-size: 0.9em;
+        	font-weight: bold;
+        	color: #000000;
+        	background-color: #ececec;
+        	padding: 5px 5px;
+        }
+        
+        .pbSubsection .detailList tr {
+        	border: none;
+        	padding-bottom: 5px;
+        }
+        
+        .pbSubsection .detailList th {
+            padding-top: 5px;	
+            padding-bottom: 5px;
+        }
+        
+        .pbSubsection .detailList td {
+        	padding-bottom: 10px;
+        	padding-left: 10px;
+        	border-bottom: 1px solid #CCCCCC;
+        }
+        
+        .pbTitle td {
+        	padding-bottom: 10px;
+        	padding-left: 10px;
+        	border-bottom: 1px solid #FF0000;
+        }
+        
+        .opportunityBlock {
+        	font-family: "Arial";
+        }
+        
+        .pbBottomButtons tr{
+        	border: none;
+        }
+        
+        .pbBottomButtons td{
+        	border: none;
+        }
+        
+        .pbBottomButtons .pbTitle{
+        	border: none;
+        }
+        
+        .pbBottomButtons .pbButtonb {
+        	margin-top: 0px;
+        }
+	}
+	</style>
+    
+    <apex:sectionHeader title="Opening Edit" subtitle="{!IF(ISNULL(Opening__c.Id),'New Opening','Edit Opening')}" />
+    <apex:pageMessages ></apex:pageMessages>
+    <apex:pageMessage summary="You can't edit Openings on a closed Opportunity" severity="warning" strength="3" rendered="{!AND($Profile.Id <> '00e80000000tCfrAAE',(isOppClosed))}" />
+    <apex:form id="openingForm">
+        <apex:pageBlock title="Opening Edit" id="openingBlock">            
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!SaveReturnOpening}" rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(isOppClosed))}" />
+                <apex:commandButton value="Save & New" action="{!saveNew}" rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(isOppClosed))}" styleClass="btnSaveNew" />
+                <apex:commandButton value="Cancel" action="{!cancel}" />
+            </apex:pageBlockButtons>
+            <apex:pageBlockSection collapsible="false" title="Opening Information" columns="2" id="openingSection">
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel value="Account Name" />
+                    <apex:outputPanel id="panelRefreshAccountName" >
+                        {!AccountName}
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >                        
+                    <apex:outputLabel for="opportunityField" value="{!$ObjectType.Opening__c.fields.Opportunity__c.Label}" />
+                    <apex:outputField value="{!Opening__c.Opportunity__c}"/>
+                    <!--<apex:outputPanel >
+                        <apex:actionRegion >
+                            <apex:inputField value="{!Opening__c.Opportunity__c}" id="opportunityField">
+                                <apex:actionSupport event="onchange" action="{!reloadAccountName}" reRender="panelRefreshAccountName" />    
+                            </apex:inputField>
+                        </apex:actionRegion>
+                    </apex:outputPanel>-->
+                </apex:pageBlockSectionItem>                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="selectListPosition" value="{!$ObjectType.Opening__c.fields.Position__c.Label}" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:actionRegion >
+                                <apex:selectList value="{!Opening__c.Position__c}" size="1" id="selectListPosition" required="true">
+                                    <apex:actionSupport event="onchange" action="{!reloadListSeniorities}" reRender="panelRefresh1, panelBMM" />
+                                    <apex:selectOptions value="{!ListPositions}"/>
+                                </apex:selectList>
+                            </apex:actionRegion>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="selectListSeniority" value="{!$ObjectType.Opening__c.fields.Seniority__c.Label}" />
+                    <apex:outputPanel id="panelRefresh1">
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:selectList value="{!Opening__c.Seniority__c}" size="1" id="selectListSeniority" >
+                                <apex:selectOptions value="{!ListSeniorities}"/>
+                            </apex:selectList>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="qtyValue" value="{!$ObjectType.Opening__c.fields.Quantity__c.Label}" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:actionRegion >
+                                <apex:inputField id="qtyValue" value="{!Opening__c.Quantity__c}">
+                                    <apex:actionSupport event="onchange" action="{!recalculateOpeningBMM}" reRender="panelBMM" />
+                                </apex:inputField>
+                            </apex:actionRegion>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="selectListLocations" value="{!$ObjectType.Opening__c.fields.Location__c.Label}" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:actionRegion >
+                                <apex:selectList value="{!Opening__c.Location__c}" size="1" id="selectListLocations" required="true">
+                                    <apex:actionSupport event="onchange" action="{!recalculateOpeningBMM}" reRender="panelBMM" />
+                                    <apex:selectOptions value="{!ListLocations}"/>
+                                </apex:selectList>
+                            </apex:actionRegion>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>                
+                <apex:inputField value="{!Opening__c.Duration__c}"/>
+                <apex:inputField value="{!Opening__c.Unit__c}"/>
+                <apex:inputField value="{!Opening__c.Sale_Rate__c}" rendered="{!isNotFPContractType}"/>
+                <apex:inputField value="{!Opening__c.Sale_Rate_Unit__c}" rendered="{!isNotFPContractType}"/>
+                <apex:outputField value="{!Opening__c.Sale_Rate__c}" rendered="{!NOT(isNotFPContractType)}"/>
+                <apex:outputField value="{!Opening__c.Sale_Rate_Unit__c}" rendered="{!NOT(isNotFPContractType)}"/> 
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="startDateValue" value="{!$ObjectType.Opening__c.fields.Start_Date_Value__c.Label}" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:actionRegion >
+                                <apex:inputField id="startDateValue" value="{!Opening__c.Start_Date_Value__c}">
+                                    <apex:actionSupport event="onchange" action="{!reloadStartDate}" reRender="startDatePanel" />
+                                </apex:inputField>
+                            </apex:actionRegion>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="startDateUnit" value="{!$ObjectType.Opening__c.fields.Start_Date_Unit__c.Label}" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:actionRegion >
+                                <apex:inputField id="startDateUnit" value="{!Opening__c.Start_Date_Unit__c}">
+                                    <apex:actionSupport event="onchange" action="{!reloadStartDate}" reRender="startDatePanel" />
+                                </apex:inputField>
+                            </apex:actionRegion>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="startDate" value="{!$ObjectType.Opening__c.fields.Start_Date__c.Label}" />
+                    <apex:outputPanel id="startDatePanel">
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:outputField id="startDate" value="{!Opening__c.Start_Date__c}"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:inputField value="{!Opening__c.load__c}"/>                
+                
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="interviewValue" value="{!$ObjectType.Opening__c.fields.Client_Interview_Requiered__c.Label}" />
+                    <apex:outputPanel >
+                        <div class="requiredInput">
+                            <div class="requiredBlock"></div>
+                            <apex:actionRegion >
+                                <apex:inputField id="interviewValue" value="{!Opening__c.Client_Interview_Requiered__c}">
+                                    <apex:actionSupport event="onchange" action="{!recalculateOpeningBMM}" reRender="panelBMM" />
+                                </apex:inputField>
+                            </apex:actionRegion>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+                <apex:inputField value="{!Opening__c.Comments__c}"/>
+                <apex:pageBlockSectionItem >
+                    <apex:outputLabel for="bmmfield" value="{!$ObjectType.Opening__c.fields.BMM__c.Label}" />
+                    <apex:outputPanel id="panelBMM">
+                        <div>
+                            <div></div>
+                            <apex:outputField id="bmmfield" value="{!Opening__c.BMM__c}"/>
+                        </div>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                
+            </apex:pageBlockSection>
+        </apex:pageBlock> 
+    </apex:form>
+</apex:page>

@@ -1,0 +1,17 @@
+{
+    "projectName": "IST Salesforce",
+    "username": "jr@globant.com.sandbox5",
+    "id": "a91bcf30-a7b5-11e6-bce7-314c1bbfdb64",
+    "namespace": "",
+    "orgType": "developer",
+    "loginUrl": "https://login.salesforce.com/",
+    "instanceUrl": "https://cs24.salesforce.com",
+    "workspace": "C:\\Salesforce",
+    "subscription": [
+        "ApexClass",
+        "ApexComponent",
+        "ApexPage",
+        "ApexTrigger",
+        "StaticResource"
+    ]
+}

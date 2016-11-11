@@ -1,0 +1,12 @@
+<apex:page standardController="Opportunity" extensions="OpportunityControllerExtension">
+    <apex:stylesheet value="{!$Resource.alerts}" />
+    <apex:stylesheet value="{!$Resource.infoIcon}" />
+    
+    <apex:form rendered="{!Opportunity.Display_Alert__c == true}">
+        <warning>
+            <img src="{!$Resource.infoIcon}" border="0" />
+            <apex:outputText: value="Opening field was updated with the number of openings detailed in the opportunity" />
+        </warning>
+        <apex:commandLink id="cmdlink" value="Close" action="{!Dismiss}"/>
+    </apex:form>
+</apex:page>

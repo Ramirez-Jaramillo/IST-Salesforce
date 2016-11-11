@@ -1,0 +1,179 @@
+<apex:page standardController="Opportunity" >
+    <script>
+    	function redirectMobile(url)
+    	{
+            result=confirmDelete();
+            
+            if(result)
+            {
+                if(typeof sforce !== "undefined" && sforce !== null) {
+                    // Salesforce1 navigation
+                    sforce.one.navigateToURL(url);
+                }                
+            }
+            
+            return result;
+        }
+    </script>
+    <style>
+    /* 
+	Max width before this PARTICULAR table gets nasty
+	This query will take effect for any screen smaller than 760px
+	and also iPads specifically.
+	*/
+	@media 
+	only screen and (max-width: 760px),
+	(min-device-width: 768px) and (max-device-width: 1024px)  {
+	
+		/* Force table to not be like tables anymore */
+		table, thead, tbody, th, td, tr, tfoot { 
+			display: block; 
+		}
+		
+		/* Hide table headers (but not display: none;, for accessibility) */
+
+		.opportunityBlock {
+        	font-family: "Arial";
+        }
+        
+        thead tr { 
+			position: absolute;
+			top: -9999px;
+			left: -9999px;
+		}
+		
+		tr { 
+        	padding-bottom: 10%;
+        }
+		
+		td { 
+			/* Behave  like a "row" */
+			border: 1px solid #CCCCCC;
+        	position: relative;
+			padding-left: 50%;
+        	font-size: 14px;
+		}
+        .pbButton {
+        	border: none;
+        }
+		
+		tfoot th
+		{
+			display: inline;
+			position: relative;
+        	font-size: 14px;
+		}
+		
+		
+		td:before { 
+			/* Now like a table header */
+			position: absolute;
+			/* Top/left values mimic padding */
+			top: 0px;
+			left: 0px;
+			width: 45%; 
+			padding-right: 10px; 
+			white-space: nowrap;
+        	font-weight: bold;
+        	border-right: 1px solid #000000;
+		}
+		
+		
+		/*
+		Label the data
+		*/
+		.pbBody table td:nth-of-type(1):before { content: "Action"; }
+		.pbBody table td:nth-of-type(2):before { content: "Position Name"; }
+		.pbBody table td:nth-of-type(3):before { content: "Seniority Name"; }
+		.pbBody table td:nth-of-type(4):before { content: "Quantity"; }
+		.pbBody table td:nth-of-type(5):before { content: "Start Date Calc"; }
+		.pbBody table td:nth-of-type(6):before { content: "Duration"; }
+		.pbBody table td:nth-of-type(7):before { content: "Location"; }
+		.pbBody table td:nth-of-type(8):before { content: "Sale Rate"; }
+		.pbBody table td:nth-of-type(9):before { content: "Load"; }
+		.pbBody table td:nth-of-type(10):before { content: "Interview"; }
+        .pbBody table td:nth-of-type(11):before { content: "BMM"; }
+		
+        
+        td a {
+        	color: #1468b6;
+        	font-weight: bold;
+        }
+        
+        .pbHeader tr {
+        	border: none;
+        }
+        
+        .pbTitle {
+        	border: none;
+        }
+        
+        .OppRelOppBtns {
+        	border: none;
+        }
+        
+        .fullsearchbutton {
+        	color: #1468b6;
+        	border: 2px solid #CCCCCC;
+        	background-color: #EEEEEE;
+        	font-weight: bold;
+			padding: 10px 10px;
+        }
+        
+        .totalRow {
+        	padding-right: 5px;
+        	padding-bottom: 10px;
+        }
+	}
+    </style>
+    
+    <base target="_parent" />
+    <apex:pageBlock >
+        <apex:pageBlockButtons location="top">
+            <apex:outputLink styleClass="btn fullsearchbutton" style="text-decoration: none;" value="{!URLFOR($Action.Opening__c.New,null,[OpportunityId=Opportunity.Id,retURL='/'+opportunity.Id])}" rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(OR(Opportunity.Probability == 0,Opportunity.Probability == 100)))}">New Opening</apex:outputLink>
+        </apex:pageBlockButtons>              
+        <apex:pageBlockTable value="{!Opportunity.Openings__r}" var="opening">
+            <apex:column >
+                <apex:facet name="header">Action</apex:facet>
+                <apex:facet name="footer">Total Qty</apex:facet>
+                <apex:outputText >
+                    <apex:outputLink value="/{!opening.Id}">Hist</apex:outputLink>
+                    <apex:outputText value=" | " rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(OR(Opportunity.Probability == 0,Opportunity.Probability == 100)))}"></apex:outputText>
+                    <apex:outputLink value="{!URLFOR($Action.Opening__c.Edit, opening.Id, [retURL='/'+opportunity.Id])}" rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(OR(Opportunity.Probability == 0,Opportunity.Probability == 100)))}">Edit</apex:outputLink>
+                    <apex:outputText value=" | " rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(OR(Opportunity.Probability == 0,Opportunity.Probability == 100)))}"></apex:outputText>
+                    <apex:outputLink value="{!URLFOR($Action.Opening__c.Delete, opening.Id, [retURL='/'+opportunity.Id])}" onclick="return redirectMobile('/{!opportunity.Id}');" rendered="{!OR($Profile.Id = '00e80000000tCfrAAE',NOT(OR(Opportunity.Probability == 0,Opportunity.Probability == 100)))}">Del</apex:outputLink>
+                </apex:outputText>
+            </apex:column>
+            <apex:column value="{!opening.Position__r.Name}" />
+            <apex:column value="{!opening.Seniority__r.Name}" />
+            <apex:column value="{!opening.Quantity__c}" >
+                <apex:facet name="footer">
+                    <apex:outputText value="{0, number }" >
+                        <apex:param value="{!Opportunity.total_positions__c}" />
+                    </apex:outputText>
+                </apex:facet>
+            </apex:column>
+            <apex:column value="{!opening.Start_Date__c}" />            
+            <apex:column >
+                <apex:facet name="header">Duration</apex:facet>
+                <apex:outputText value="{0, number } {1}" >
+                    <apex:param value="{!opening.Duration__c}"/>
+                    <apex:param value="{!opening.Unit__c}"/>
+                </apex:outputText>
+            </apex:column>
+            <apex:column value="{!opening.Location__r.Complete_Name__c}" />
+            <apex:column >
+                <apex:facet name="header">Sale Rate</apex:facet>
+                <apex:outputText value="{0} {1, number, ###,##0.00} {2}" >
+                    <apex:param value="$"/>
+                    <apex:param value="{!opening.Sale_Rate__c}" />
+                    <apex:param value="{!opening.Sale_Rate_Unit__c}" />                    
+                </apex:outputText>
+            </apex:column>
+            <apex:column value="{!opening.load__c}" />
+            <apex:column value="{!opening.Client_Interview_Requiered__c}" />
+            <apex:column value="{!opening.BMM__c}" />
+            <apex:column value="{!opening.Comments__c}" />
+        </apex:pageBlockTable>
+    </apex:pageBlock>
+</apex:page>
